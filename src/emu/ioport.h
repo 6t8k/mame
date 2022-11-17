@@ -1085,7 +1085,7 @@ class ioport_port
 
 public:
 	// construction/destruction
-	ioport_port(device_t &owner, const char *tag);
+	ioport_port(device_t &owner, const char *tag, const uint64_t alloc_order);
 	~ioport_port();
 
 	// getters
@@ -1098,6 +1098,7 @@ public:
 	int modcount() const { return m_modcount; }
 	ioport_value active() const { return m_active; }
 	ioport_port_live &live() const { assert(m_live != nullptr); return *m_live; }
+	const uint64_t alloc_order() const { return m_alloc_order; }
 
 	// read/write to the port
 	ioport_value read();
@@ -1121,6 +1122,28 @@ private:
 	int                         m_modcount;     // modification count
 	ioport_value                m_active;       // mask of active bits in the port
 	std::unique_ptr<ioport_port_live> m_live;      // live state of port (nullptr if not live)
+
+	// Track order of allocation/insertion into ioport_list; used for the
+	// output of `-listxml`. As an implementation detail, this would
+	// normally be less-than-ideal to expose*, but because the order of
+	// ioport_list's elements reflects the ports' order within input
+	// recordings (INP files), having access to it can still be useful for
+	// processing older recordings:
+	//
+	// In MAME < 0.175, the ports were ordered according to order of insertion.
+	// In MAME == 0.175, the order of ioport_list's elements was unspecified:
+	// See https://github.com/mamedev/mame/commit/d705e4a28d49b9eeeadc9c019a12cf580ae5ee8f
+	//
+	// In MAME >= 0.176 (up to and including the current version at the
+	// time of writing, which is 0.249), ports are ordered
+	// lexicographically (alphabetically) by the key of the std::pair (port's fulltag):
+	// See https://github.com/mamedev/mame/commit/ef22943d0161be210b7c0ef057fa6954fdfe1993
+	//
+	// * There was and is no guarantee to the stability of this property
+	// over time; there have been changes to the ioports of existing game
+	// drivers on various occasions, affecting ports' quantity as well as
+	// order of insertion into ioport_list.
+	uint64_t                   m_alloc_order;
 };
 
 

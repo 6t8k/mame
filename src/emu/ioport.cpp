@@ -1581,12 +1581,13 @@ ioport_field_live::ioport_field_live(ioport_field &field, analog_field *analog)
 //  ioport_port - constructor
 //-------------------------------------------------
 
-ioport_port::ioport_port(device_t &owner, const char *tag)
+ioport_port::ioport_port(device_t &owner, const char *tag, const uint64_t alloc_order)
 	: m_next(nullptr),
 		m_device(owner),
 		m_tag(tag),
 		m_modcount(0),
-		m_active(0)
+		m_active(0),
+		m_alloc_order(alloc_order)
 {
 }
 
@@ -3247,7 +3248,7 @@ ioport_configurer& ioport_configurer::port_alloc(const char *tag)
 
 	// add it to the list, and reset current field/setting
 	if (m_portlist.count(fulltag) != 0) throw tag_add_exception(fulltag.c_str());
-	m_portlist.emplace(std::make_pair(fulltag, std::make_unique<ioport_port>(m_owner, fulltag.c_str())));
+	m_portlist.emplace(std::make_pair(fulltag, std::make_unique<ioport_port>(m_owner, fulltag.c_str(), m_portlist.size())));
 	m_curport = m_portlist.find(fulltag)->second.get();
 	m_curfield = nullptr;
 	m_cursetting = nullptr;

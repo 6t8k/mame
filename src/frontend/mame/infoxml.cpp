@@ -259,6 +259,7 @@ constexpr char f_dtd_string[] =
 		"\t\t\t\t<!ATTLIST confsetting default (yes|no) \"no\">\n"
 		"\t\t<!ELEMENT port (analog|nonanalog)*>\n"
 		"\t\t\t<!ATTLIST port tag CDATA #REQUIRED>\n"
+		"\t\t\t<!ATTLIST port _alloc_order CDATA #REQUIRED>\n"
 		"\t\t\t<!ELEMENT analog EMPTY>\n"
 		"\t\t\t\t<!ATTLIST analog mask CDATA #REQUIRED>\n"
 		"\t\t\t\t<!ATTLIST analog type CDATA #REQUIRED>\n"
@@ -2209,7 +2210,7 @@ void output_ports(std::ostream &out, const ioport_list &portlist)
 	// cycle through ports
 	for (auto &port : portlist)
 	{
-		util::stream_format(out, "\t\t<port tag=\"%s\">\n", normalize_string(port.second->tag()));
+		util::stream_format(out, "\t\t<port tag=\"%s\" _alloc_order=\"%llu\">\n", normalize_string(port.second->tag()), port.second->alloc_order());
 		for (ioport_field const &field : port.second->fields())
 		{
 			if (field.type() == IPT_SPECIAL || field.type() == IPT_CUSTOM)
